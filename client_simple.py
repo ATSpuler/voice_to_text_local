@@ -9,11 +9,54 @@ import requests
 import tempfile
 import os
 import time
-from typing import Optional
+import apsw
+import datetime
+from typing import Optional, List, Tuple
 
 class SimpleVoiceClient:
-    def __init__(self, server_url: str = "http://localhost:8000"):
+    def __init__(self, server_url: str = "http://localhost:8000", db_path: str = "transcriptions.db"):
         self.server_url = server_url.rstrip('/')
+        self.db_path = db_path
+        self.init_database()
+    
+    def init_database(self):
+        """Initialize APSW database for storing transcriptions"""
+        db = apsw.Connection(self.db_path)
+        cursor = db.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS transcriptions (
+                id INTEGER PRIMARY KEY,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                text TEXT NOT NULL,
+                language TEXT,
+                duration INTEGER,
+                source TEXT DEFAULT 'recording'
+            )
+        ''')
+        db.close()
+    
+    def save_transcription(self, text: str, language: str = "unknown", duration: int = None, source: str = "recording"):
+        """Save transcription to database"""
+        db = apsw.Connection(self.db_path)
+        cursor = db.cursor()
+        cursor.execute('''
+            INSERT INTO transcriptions (text, language, duration, source)
+            VALUES (?, ?, ?, ?)
+        ''', (text, language, duration, source))
+        db.close()
+    
+    def get_transcriptions(self, limit: int = 20) -> List[Tuple]:
+        """Get recent transcriptions from database"""
+        db = apsw.Connection(self.db_path)
+        cursor = db.cursor()
+        results = list(cursor.execute('''
+            SELECT id, timestamp, text, language, duration, source
+            FROM transcriptions
+            ORDER BY timestamp DESC
+            LIMIT ?
+        ''', (limit,)))
+        db.close()
+        return results
         
     def test_server_connection(self) -> bool:
         """Test connection to the server"""
@@ -107,7 +150,7 @@ class SimpleVoiceClient:
                 text = result.get('text', '').strip()
                 language = result.get('language', 'unknown')
                 print(f"🌍 Detected language: {language}")
-                return text
+                return text, language
             else:
                 print(f"❌ Transcription failed: {response.status_code} - {response.text}")
                 return None
@@ -122,6 +165,7 @@ class SimpleVoiceClient:
         print("Commands:")
         print("  'r' = record audio")
         print("  'f' = transcribe file") 
+        print("  'h' = view transcription history")
         print("  't' = test server")
         print("  'q' = quit")
         
@@ -141,9 +185,12 @@ class SimpleVoiceClient:
                 
                 try:
                     audio_file = self.record_audio_system(duration)
-                    text = self.transcribe_file(audio_file)
-                    if text:
+                    result = self.transcribe_file(audio_file)
+                    if result:
+                        text, language = result
                         print(f"📝 Transcription: '{text}'")
+                        self.save_transcription(text, language, duration, "recording")
+                        print("💾 Saved to database")
                     else:
                         print("❌ Transcription failed")
                     
@@ -155,13 +202,24 @@ class SimpleVoiceClient:
                     
             elif command == 'f':
                 file_path = input("Enter audio file path: ").strip()
-                text = self.transcribe_file(file_path)
-                if text:
+                result = self.transcribe_file(file_path)
+                if result:
+                    text, language = result
                     print(f"📝 Transcription: '{text}'")
+                    self.save_transcription(text, language, None, f"file:{os.path.basename(file_path)}")
+                    print("💾 Saved to database")
                 else:
                     print("❌ Transcription failed")
+            elif command == 'h':
+                print("\n📚 Recent Transcriptions:")
+                transcriptions = self.get_transcriptions()
+                if not transcriptions:
+                    print("No transcriptions found.")
+                else:
+                    for i, (id, timestamp, text, language, duration, source) in enumerate(transcriptions[:10]):
+                        print(f"{i+1}. [{timestamp}] ({language}) {source}: {text[:50]}{'...' if len(text) > 50 else ''}")
             else:
-                print("Unknown command. Use 'r', 'f', 't', or 'q'")
+                print("Unknown command. Use 'r', 'f', 'h', 't', or 'q'")
 
 def main():
     print("Simple Voice-to-Text Client for macOS 10.15.7")

@@ -26,7 +26,7 @@ app.add_middleware(
 # Global model instance
 model: Optional[whisper.Whisper] = None
 
-def load_whisper_model(model_size: str = "base"):
+def load_whisper_model(model_size: str = "large"):
     """Load Whisper model on GPU if available"""
     global model
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -39,8 +39,8 @@ def load_whisper_model(model_size: str = "base"):
 @app.on_event("startup")
 async def startup_event():
     """Initialize model on server startup"""
-    # Use 'base' model for 12GB GPU - can upgrade to 'large' if needed
-    load_whisper_model("base")
+    # Use 'large' model for 12GB GPU
+    load_whisper_model("large")
 
 @app.get("/")
 async def root():
