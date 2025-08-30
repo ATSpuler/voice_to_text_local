@@ -15,6 +15,8 @@ import termios
 import tty
 import sys
 import signal
+import socket
+import threading
 from typing import Optional, Tuple
 
 class SimpleToggleClient:
@@ -25,6 +27,10 @@ class SimpleToggleClient:
         self.recording_process = None
         self.current_audio_file = None
         self.last_key_time = 0
+        self.socket_path = "/tmp/voice_client.sock"
+        self.socket_server = None
+        self.socket_thread = None
+        self.running = True
         self.init_database()
         
         # Setup signal handlers for clean shutdown
@@ -34,7 +40,9 @@ class SimpleToggleClient:
     def signal_handler(self, signum, frame):
         """Handle shutdown signals"""
         print("\n🛑 Shutting down...")
+        self.running = False
         self.cleanup_recording()
+        self.cleanup_socket()
         sys.exit(0)
     
     def init_database(self):
@@ -162,6 +170,74 @@ class SimpleToggleClient:
         self.recording_process = None
         print("✅ Ready (press 'c' to start recording)")
     
+    def setup_socket_listener(self):
+        """Setup Unix socket listener for external commands"""
+        try:
+            # Remove existing socket file if it exists
+            if os.path.exists(self.socket_path):
+                os.unlink(self.socket_path)
+            
+            self.socket_server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self.socket_server.bind(self.socket_path)
+            self.socket_server.listen(1)
+            
+            # Start listening thread
+            self.socket_thread = threading.Thread(target=self.socket_listener, daemon=True)
+            self.socket_thread.start()
+            
+            print(f"🔌 Socket listener ready at {self.socket_path}")
+        except Exception as e:
+            print(f"❌ Failed to setup socket: {e}")
+    
+    def socket_listener(self):
+        """Listen for socket connections and handle commands"""
+        while self.running:
+            try:
+                self.socket_server.settimeout(1.0)  # Allow periodic checks of self.running
+                conn, addr = self.socket_server.accept()
+                
+                with conn:
+                    data = conn.recv(1024).decode('utf-8').strip().lower()
+                    
+                    if data == 'toggle':
+                        current_time = time.time()
+                        if current_time - self.last_key_time > 0.5:  # 500ms debounce
+                            self.last_key_time = current_time
+                            if not self.is_recording:
+                                self.start_recording()
+                            else:
+                                self.stop_recording()
+                    elif data == 'start':
+                        if not self.is_recording:
+                            self.start_recording()
+                    elif data == 'stop':
+                        if self.is_recording:
+                            self.stop_recording()
+                    elif data == 'status':
+                        status = "recording" if self.is_recording else "ready"
+                        conn.send(status.encode('utf-8'))
+                        
+            except socket.timeout:
+                continue  # Check self.running and continue
+            except Exception as e:
+                if self.running:  # Only print errors if we're still supposed to be running
+                    print(f"❌ Socket error: {e}")
+                break
+    
+    def cleanup_socket(self):
+        """Clean up socket resources"""
+        if self.socket_server:
+            try:
+                self.socket_server.close()
+            except:
+                pass
+        
+        if os.path.exists(self.socket_path):
+            try:
+                os.unlink(self.socket_path)
+            except:
+                pass
+    
     def cleanup_recording(self):
         """Clean up any ongoing recording"""
         if self.is_recording:
@@ -213,7 +289,12 @@ class SimpleToggleClient:
         print("🎙️ Simple Toggle Voice-to-Text Client")
         print("📋 Text will be automatically copied to clipboard")
         print("⌨️ Press 'c' to start recording, press 'c' again to stop & transcribe")
+        print("🌐 Global hotkey support via socket (Hammerspoon ready)")
         print("🚪 Press 'q' to quit")
+        
+        # Setup socket listener
+        self.setup_socket_listener()
+        
         print("✅ Ready (press 'c' to start recording)")
         
         while True:
@@ -230,15 +311,21 @@ class SimpleToggleClient:
                             self.stop_recording()
                 elif char == 'q':
                     print("\n👋 Goodbye!")
+                    self.running = False
                     self.cleanup_recording()
+                    self.cleanup_socket()
                     break
                 elif char == '\x03':  # Ctrl+C
                     print("\n👋 Goodbye!")
+                    self.running = False
                     self.cleanup_recording()
+                    self.cleanup_socket()
                     break
             except KeyboardInterrupt:
                 print("\n👋 Goodbye!")
+                self.running = False
                 self.cleanup_recording()
+                self.cleanup_socket()
                 break
 
 def main():

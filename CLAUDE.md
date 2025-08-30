@@ -54,18 +54,23 @@ python server.py
 
 ### Start Client (Mac)
 
-**Interactive Mode:**
+**Global Hotkey Mode (Recommended):**
 ```bash
 cd /Volumes/Macintosh\ HD/Users/sanchez/2025/scratch/voice_to_text_local
+python client_simple_toggle.py
+# Hotkeys: Cmd+Shift+L (toggle recording), Cmd+Shift+S (status)
+# Works from any application, auto-copies to clipboard
+```
+
+**Interactive Mode:**
+```bash
 python client_simple.py
-# Enter: http://192.168.0.105:8000
 # Commands: 'r' record, 'f' file, 'h' history, 't' test, 'q' quit
 ```
 
 **Streaming Mode:**
 ```bash
 python client_streaming.py
-# Enter: http://192.168.0.105:8000
 # Commands: 's' start streaming, 'o' view output, 't' test, 'q' quit
 ```
 
@@ -85,6 +90,7 @@ python client_streaming.py
 - Streaming: Configurable chunk duration (default 5s, supports 3-20s)
 
 ## Completed Features
+- ✅ Global hotkey support (Cmd+Shift+L) via Hammerspoon + Unix sockets
 - ✅ Real-time audio streaming capabilities (client_streaming.py)
 - ✅ APSW SQLite database storage
 - ✅ Clean text output to files
