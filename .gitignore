@@ -13,3 +13,4 @@ wheels/
 txt
 history
 transcriptions.db
+venv_local/
