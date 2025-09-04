@@ -332,9 +332,8 @@ def main():
     print("Simple Toggle Voice-to-Text Client")
     print("Press 'c' to toggle recording, no permissions needed!")
     
-    server_url = input("Server URL (default: http://192.168.0.105:8000): ").strip()
-    if not server_url:
-        server_url = "http://192.168.0.105:8000"
+    # Use default server URL for automatic launch
+    server_url = "http://192.168.0.105:8000"
     
     client = SimpleToggleClient(server_url)
     client.run()
