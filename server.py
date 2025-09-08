@@ -39,8 +39,8 @@ def load_whisper_model(model_size: str = "large"):
 @app.on_event("startup")
 async def startup_event():
     """Initialize model on server startup"""
-    # Use 'large' model for 12GB GPU
-    load_whisper_model("large")
+    # Use 'turbo' model for faster processing on 12GB GPU
+    load_whisper_model("turbo")
 
 @app.get("/")
 async def root():
