@@ -9,8 +9,33 @@ wheels/
 # Virtual environments
 .venv
 
-# outotu
-txt
+# Output files
+*.txt
 history
 transcriptions.db
 venv_local/
+Load_Whisper_speech_to_text_server/
+# Temporary and sensitive files
+*.log
+*.db
+*.sqlite*
+.DS_Store
+.env*
+*.key
+*.pem
+config.json
+credentials*
+*password*
+*secret*
+
+# Conversation logs and archives
+*claude*conversation*.md
+*.zip
+*.tar.gz
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
