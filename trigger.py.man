@@ -1,0 +1,20 @@
+The trigger.py file is a command-line interface for controlling the
+  voice client via Unix socket communication. It allows you to send
+  commands (toggle, start, stop, status) to a running voice client
+  process.
+
+  Current usage status: Not actively used. The main workflow uses
+  client_simple_toggle.py with Hammerspoon hotkeys (Cmd+Shift+L), but
+  trigger.py provides a command-line alternative for programmatic control.
+
+  Purpose:
+  - Send commands to voice client without hotkeys
+  - Useful for automation scripts or remote control
+  - Works with any voice client that implements Unix socket listening
+
+  Usage example:
+  python trigger.py toggle  # Start/stop recording
+  python trigger.py status  # Check recording status
+
+  Its a utility tool that complements the hotkey system but isnt part of
+   the primary workflow described

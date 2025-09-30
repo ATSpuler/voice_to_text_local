@@ -1,3 +1,23 @@
+CLAUDE.md
+README.md
+__pycache__/
+
+
+discarded/
+history/
+logs/
+propt_claud.md
+
+
+transcriptions.db
+txt/
+
+venv_local/
+versiones/
+
+
+
+
 # Python-generated files
 __pycache__/
 *.py[oc]
