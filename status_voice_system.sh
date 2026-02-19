@@ -6,7 +6,7 @@
 set -euo pipefail
 
 # Configuration
-SERVER_HOST="192.168.0.105"
+SERVER_HOST="100.107.71.56"
 SERVER_PORT="8000"
 SERVER_USER="al"
 CLIENT_SESSION="voice_client"

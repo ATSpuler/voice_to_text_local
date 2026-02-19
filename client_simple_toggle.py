@@ -20,7 +20,7 @@ import threading
 from typing import Optional, Tuple
 
 class SimpleToggleClient:
-    def __init__(self, server_url: str = "http://192.168.0.105:8000", db_path: str = "transcriptions.db"):
+    def __init__(self, server_url: str = "http://100.107.71.56:8000", db_path: str = "transcriptions.db"):
         self.server_url = server_url.rstrip('/')
         self.db_path = db_path
         self.is_recording = False
@@ -282,7 +282,7 @@ class SimpleToggleClient:
         """Run the toggle client"""
         if not self.test_server_connection():
             print("Cannot connect to server. Make sure:")
-            print("1. Server is running: ssh al@192.168.0.105")
+            print("1. Server is running: ssh al@100.107.71.56")
             print("2. Run: cd voice_to_text_local && source venv/bin/activate && python server.py")
             return
         
@@ -333,7 +333,7 @@ def main():
     print("Press 'c' to toggle recording, no permissions needed!")
     
     # Use default server URL for automatic launch
-    server_url = "http://192.168.0.105:8000"
+    server_url = "http://100.107.71.56:8000"
     
     client = SimpleToggleClient(server_url)
     client.run()

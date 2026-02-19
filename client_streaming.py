@@ -18,7 +18,7 @@ import sys
 import queue
 
 class StreamingVoiceClient:
-    def __init__(self, server_url: str = "http://192.168.0.105:8000", 
+    def __init__(self, server_url: str = "http://100.107.71.56:8000",
                  chunk_duration: int = 5, output_file: str = "live_transcription.txt"):
         self.server_url = server_url.rstrip('/')
         self.chunk_duration = chunk_duration
@@ -273,9 +273,9 @@ def main():
     print("Streaming Voice-to-Text Client")
     print("Continuous recording and transcription")
     
-    server_url = input("Server URL (default: http://192.168.0.105:8000): ").strip()
+    server_url = input("Server URL (default: http://100.107.71.56:8000): ").strip()
     if not server_url:
-        server_url = "http://192.168.0.105:8000"
+        server_url = "http://100.107.71.56:8000"
     
     chunk_duration = input("Chunk duration in seconds (default: 5): ").strip()
     try:

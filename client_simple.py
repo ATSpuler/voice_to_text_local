@@ -225,16 +225,16 @@ def main():
     print("Simple Voice-to-Text Client for macOS 10.15.7")
     print("This version works without PyAudio compilation issues")
     
-    server_url = input("Server URL (default: http://192.168.0.105:8000): ").strip()
+    server_url = input("Server URL (default: http://100.107.71.56:8000): ").strip()
     if not server_url:
-        server_url = "http://192.168.0.105:8000"
+        server_url = "http://100.107.71.56:8000"
     
     client = SimpleVoiceClient(server_url)
     
     # Test server first
     if not client.test_server_connection():
         print("Cannot connect to server. Make sure:")
-        print("1. Server is running: ssh al@192.168.0.105")
+        print("1. Server is running: ssh al@100.107.71.56")
         print("2. Run: cd voice_to_text_local && source venv/bin/activate && python server.py")
         return
     

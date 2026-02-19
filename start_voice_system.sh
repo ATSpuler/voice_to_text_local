@@ -9,7 +9,7 @@ set -euo pipefail  # Exit on error, undefined vars, pipe failures
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="${SCRIPT_DIR}/logs"
 LOG_FILE="${LOG_DIR}/startup_$(date +%Y%m%d_%H%M%S).log"
-SERVER_HOST="192.168.0.105"
+SERVER_HOST="100.107.71.56"
 SERVER_PORT="8000"
 SERVER_USER="al"
 SERVER_PATH="voice_to_text_local"

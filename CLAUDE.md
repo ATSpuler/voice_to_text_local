@@ -5,14 +5,14 @@
 A distributed voice-to-text system using OpenAI Whisper with GPU acceleration and streaming capabilities.
 
 ## Architecture
-- **Client (Mac)**: macOS 10.15.7, limited Homebrew support
-- **Server (Ubuntu GPU)**: RTX 3060 12GB with nv-535 driver, running at 192.168.0.105:8000
-- **Communication**: REST API over local network
+- **Client (Mac)**: macOS 13.7.8 (Ventura), using conda py25 environment
+- **Server (Ubuntu GPU)**: RTX 3060 12GB with nv-535 driver, running at 100.107.71.56:8000
+- **Communication**: REST API over Tailscale (encrypted WireGuard VPN)
 
 ## Hardware Setup
 - Ubuntu GPU server: RTX 3060 12GB with existing nv-535 driver (preserved)
-- Mac client: Intel Mac, macOS 10.15.7 (limited package management)
-- Network: Direct SSH access via 192.168.0.105
+- Mac client: macOS 13.7.8 (Ventura)
+- Network: Tailscale mesh VPN - works from anywhere with internet (al@100.107.71.56)
 
 ## Current Implementation
 
@@ -35,18 +35,22 @@ A distributed voice-to-text system using OpenAI Whisper with GPU acceleration an
 - GPU testing confirmed: "NVIDIA GeForce RTX 3060" accessible
 
 ## Client Setup Completed
+- Conda environment: `py25` at `/Users/Adan/miniforge3/envs/py25/`
+- Dependencies installed: requests, apsw
+- ffmpeg 8.0 (via conda-forge) - working with AVFoundation
 - Interactive client (`client_simple.py`) works without PyAudio compilation issues
+- Streaming client (`client_simple_toggle.py`) with global hotkey support
 - Streaming client (`client_streaming.py`) for continuous transcription
 - APSW SQLite database for transcription storage
-- Uses system tools for audio recording when available
-- File upload option for testing
-- Successfully connects to server at http://192.168.0.105:8000
+- Hammerspoon integration for global hotkeys (Cmd+Shift+L, Cmd+Shift+S)
+- Automatic clipboard copy on transcription completion
+- Successfully connects to server at http://100.107.71.56:8000 (Tailscale)
 
 ## Current Workflow
 
 ### Start Server (Ubuntu)
 ```bash
-ssh al@192.168.0.105
+ssh al@100.107.71.56
 cd voice_to_text_local
 source venv/bin/activate
 python server.py
@@ -75,27 +79,30 @@ python client_streaming.py
 ```
 
 ## Real Audio Recording Setup (COMPLETED)
-- **FFmpeg installed**: Version 5.1.2-tessus working on macOS 10.15.7
-- **Microphone access**: "Built-in Microphone" device detected and functional
+- **ffmpeg installed**: Version 8.0 from conda-forge
+- **Microphone access**: "Built-in Microphone" device detected and functional via AVFoundation
 - **Recording command**: `ffmpeg -f avfoundation -i :0 -ar 16000 -ac 1 -t [duration] output.wav`
-- **Status**: Real voice recording working, no more mock audio
+- **Status**: Real voice recording working perfectly
 
 ## Technical Details
 - Audio format: 16-bit PCM, mono, 16kHz (Whisper optimal)
-- Whisper model: 'large' (optimized for 12GB VRAM, upgraded from base)
+- Whisper model: 'turbo' (optimized for 12GB VRAM, fast processing)
 - API endpoints: `/` (health), `/transcribe` (main), `/model-info`
 - Temp file handling with proper cleanup
 - CORS enabled for cross-origin requests
 - Database: APSW SQLite for transcription storage
 - Streaming: Configurable chunk duration (default 5s, supports 3-20s)
+- Network: Tailscale encrypted VPN (100.107.71.56), works from anywhere
 
 ## Completed Features
-- ✅ Global hotkey support (Cmd+Shift+L) via Hammerspoon + Unix sockets
+- ✅ Global hotkey support (Cmd+Shift+L toggle, Cmd+Shift+S status) via Hammerspoon + Unix sockets
 - ✅ Real-time audio streaming capabilities (client_streaming.py)
 - ✅ APSW SQLite database storage
 - ✅ Clean text output to files
 - ✅ Graceful shutdown with processing completion
-- ✅ Whisper large model integration
+- ✅ Whisper turbo model integration
+- ✅ **Tailscale integration - works over internet from anywhere**
+- ✅ Automatic clipboard copy on transcription
 
 ## Known Issues
 - **Longer chunks (10-20s)**: May lose final portion due to processing timeout
@@ -118,10 +125,12 @@ python client_streaming.py
 - **Server logs**: No persistent storage
 
 ## Session Status
-✅ FULLY OPERATIONAL + STREAMING - Real microphone recording with GPU-accelerated transcription
-- Real-time voice capture via FFmpeg
-- Multi-language support confirmed  
-- Client-server communication stable
+✅ FULLY OPERATIONAL OVER TAILSCALE - Working from anywhere with internet!
+- Real-time voice capture via ffmpeg 8.0 (conda)
+- Multi-language support confirmed (auto-detection)
+- Client-server communication over Tailscale (encrypted WireGuard)
 - Streaming transcription with database storage
+- Global hotkeys working (Cmd+Shift+L toggle, Cmd+Shift+S status)
+- Automatic clipboard copy working
 - Clean text output for continuous recording
-- All originally planned features completed + streaming enhancements
+- All features completed + Tailscale internet access!
